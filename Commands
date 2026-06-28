@@ -1,0 +1,95 @@
+# Crear la Imagen
+
+docker build -t archlinux .
+
+# Configurar interfaz de red privada vinculada al bridge personal (crea la red ejecutar una sola vez si no la tenemos )
+# verificar con docker network ls
+
+docker network create \
+  --driver=bridge \
+  --subnet=10.10.10.0/24 \
+  --gateway=10.10.10.1 \
+  -o "com.docker.network.bridge.name"="br-machines" \
+  net-machines
+
+# Crear el contenedor a la red privada
+docker run -it \
+  --name hackarch-1 \
+  --network net-machines \
+  --hostname archlinux \
+  --privileged \
+  --ipc=host \
+  -v /run/user/1000:/run/user/1000 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -v /dev/dri:/dev/dri \
+  archlinux
+
+
+# Contenedor con las mismas interfaces en red que el dipositivo (para auditorias en red)
+docker run -it \
+  --name hackarch-2 \
+  --network host \
+  --privileged \
+  --cap-add=ALL \
+  --ipc=host \
+  -v /run/user/1000:/run/user/1000 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -v /dev/dri:/dev/dri \
+  archlinux \
+  /bin/zsh
+
+==============Alias a usar fish====================
+# todo en la maquina host (No docker)
+# instalar xorg-xhost
+# ejecutar: xhost +local
+
+#hackarch-1:
+function hackvm
+    echo "[+] Iniciando máquina hackarch-1..."
+    docker start hackarch-1 >/dev/null
+    
+    echo "[+] Desplegando terminal maestra en Niri..."
+    nohup docker exec -d \
+        -e WAYLAND_DISPLAY=$WAYLAND_DISPLAY \
+        -e XDG_RUNTIME_DIR=/run/user/1000 \
+        -e QT_QPA_PLATFORM=wayland \
+        -e GDK_BACKEND=wayland \
+        -u stark \
+        hackarch-1 kitty >/dev/null 2>&1 &
+    
+    disown
+    echo "[+] Entorno hackarch-1 listo y terminal desplegada."
+end
+
+function vmhack-stop
+    echo "[-] Deteniendo máquina hackarch-1..."
+    docker stop hackarch-1 >/dev/null
+    echo "[-] hackarch-1 se ha detenido correctamente."
+end
+
+
+#hackarch-2:
+
+function pentest
+    echo "[+] Iniciando máquina hackarch-1..."
+    docker start hackarch-2 >/dev/null
+    
+    echo "[+] Desplegando terminal maestra en Niri..."
+    nohup docker exec -d \
+        -e WAYLAND_DISPLAY=$WAYLAND_DISPLAY \
+        -e XDG_RUNTIME_DIR=/run/user/1000 \
+        -e QT_QPA_PLATFORM=wayland \
+        -e GDK_BACKEND=wayland \
+        -u stark \
+        hackarch-2 kitty >/dev/null 2>&1 &
+    
+    disown
+    echo "[+] Entorno hackarch-2 listo y terminal desplegada."
+end
+
+function pentest-stop
+    echo "[-] Deteniendo máquina hackarch-2..."
+    docker stop hackarch-2 >/dev/null
+    echo "[-] hackarch-2 se ha detenido correctamente."
+end
+
