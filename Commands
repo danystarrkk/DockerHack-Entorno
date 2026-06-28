@@ -18,6 +18,7 @@ docker run -it \
   --network net-machines \
   --hostname archlinux \
   --privileged \
+  --shm-size=2g \
   --ipc=host \
   -v /run/user/1000:/run/user/1000 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -30,6 +31,7 @@ docker run -it \
   --name hackarch-2 \
   --network host \
   --privileged \
+  --shm-size=2g \
   --cap-add=ALL \
   --ipc=host \
   -v /run/user/1000:/run/user/1000 \
