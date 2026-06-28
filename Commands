@@ -43,13 +43,16 @@ docker run -it \
 ==============Alias a usar fish====================
 # todo en la maquina host (No docker)
 # instalar xorg-xhost
-# ejecutar: xhost +local
+# ejecutar: xhost +local -> esto es necesario siempre que vamos a usarlo
+# agregarlo si se requiere simpre al inicio de session o a los alias para que se
+# ejecute o prenda solo cuando vamos a usar esto y no siempre
 
 #hackarch-1:
 function hackvm
     echo "[+] Iniciando máquina hackarch-1..."
     docker start hackarch-1 >/dev/null
-    
+    xhost +local:
+
     echo "[+] Desplegando terminal maestra en Niri..."
     nohup docker exec -d \
         -e WAYLAND_DISPLAY=$WAYLAND_DISPLAY \
@@ -75,7 +78,8 @@ end
 function pentest
     echo "[+] Iniciando máquina hackarch-1..."
     docker start hackarch-2 >/dev/null
-    
+    xhost +local:
+
     echo "[+] Desplegando terminal maestra en Niri..."
     nohup docker exec -d \
         -e WAYLAND_DISPLAY=$WAYLAND_DISPLAY \
