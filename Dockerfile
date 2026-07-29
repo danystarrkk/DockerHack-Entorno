@@ -5,6 +5,8 @@ RUN apt-get update && \
   apt-get upgrade -y && \
   apt-get install -y \
   build-essential \
+  lsd \
+  bat \
   git \
   sudo \
   curl \
@@ -22,6 +24,8 @@ RUN apt-get update && \
   kali-linux-default && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN useradd -m -s /bin/zsh -G sudo stark && \
   echo "stark:stark" | chpasswd && \

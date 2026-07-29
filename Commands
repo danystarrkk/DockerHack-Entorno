@@ -1,5 +1,5 @@
 # Crear la Imagen
-docker build -t kali-pentest .
+docker build --network=host -t kali-pentest .
 
 docker run -it -d \
   --name kali-box \
