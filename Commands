@@ -1,10 +1,8 @@
 # Crear la Imagen
+docker build -t kali-pentest .
 
-docker build -t archlinux .
-
-# Contenedor con las mismas interfaces en red que el dipositivo (para auditorias en red)
-docker run -it \
-  --name hackarch-2 \
+docker run -it -d \
+  --name kali-box \
   --network host \
   --privileged \
   --shm-size=4g \
@@ -13,7 +11,11 @@ docker run -it \
   -v /run/user/1000:/run/user/1000 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v /dev/dri:/dev/dri \
-  archlinux \
+  -e HOSTNAME=kali \
+  -e DISPLAY=$DISPLAY \
+  -e WAYLAND_DISPLAY=$WAYLAND_DISPLAY \
+  -e XDG_RUNTIME_DIR=/run/user/1000 \
+  kali-pentest \
   /bin/zsh
 
 ==============Alias a usar Zsh====================
@@ -23,10 +25,9 @@ docker run -it \
 # agregarlo si se requiere simpre al inicio de session o a los alias para que se
 # ejecute o prenda solo cuando vamos a usar esto y no siempre
 
-
 pentest() {
-    echo "[+] Iniciando máquina hackarch-2..."
-    docker start hackarch-2 >/dev/null
+    echo "[+] Iniciando máquina kali-box..."
+    docker start kali-box >/dev/null
     xhost +local: &>/dev/null
 
     echo "[+] Desplegando terminal maestra en GNOME (Forzando X11)..."
@@ -36,14 +37,14 @@ pentest() {
         -e QT_QPA_PLATFORM=xcb \
         -e GDK_BACKEND=x11 \
         -u stark \
-        hackarch-2 kitty >/dev/null 2>&1 &
+        kali-box kitty >/dev/null 2>&1 &
     
     disown
-    echo "[+] Entorno hackarch-2 listo y terminal desplegada."
+    echo "[+] Entorno kali-box listo y terminal desplegada."
 }
 
 pentest-stop() {
-    echo "[-] Deteniendo máquina hackarch-2..."
-    docker stop hackarch-2 >/dev/null
-    echo "[-] hackarch-2 se ha detenido correctamente."
+    echo "[-] Deteniendo máquina kali-box..."
+    docker stop kali-box >/dev/null
+    echo "[-] kali-box se ha detenido correctamente."
 }

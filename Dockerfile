@@ -1,11 +1,10 @@
-# 1. Imagen base: Arch Linux puro
-FROM archlinux:latest
+FROM kalilinux/kali-rolling
 
 # 2. Actualizar el sistema e instalar dependencias base
-# Incluimos lo necesario para clonar repos y ejecutar scripts de automatización
-RUN pacman -Syu --noconfirm && \
-  pacman -S --needed --noconfirm \
-  base-devel \
+RUN apt-get update && \
+  apt-get upgrade -y && \
+  apt-get install -y \
+  build-essential \
   git \
   sudo \
   curl \
@@ -13,28 +12,24 @@ RUN pacman -Syu --noconfirm && \
   zsh \
   neovim \
   kitty \
-  7zip \
+  p7zip-full \
   unzip \
   tar \
-  iputils \
+  iputils-ping \
   iproute2 \
-  dhclient \
-  bind && \
-  pacman -Scc --noconfirm
+  isc-dhcp-client \
+  dnsutils \
+  kali-linux-default && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
-# 3. Creación del usuario 'stark' con privilegios
-# -m: crea el directorio home, -s: shell, -G: grupos (wheel para sudo)
-RUN useradd -m -s /bin/zsh -G wheel stark && \
+RUN useradd -m -s /bin/zsh -G sudo stark && \
   echo "stark:stark" | chpasswd && \
-  # Permitir sudo sin contraseña para el grupo wheel
-  echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel && \
-  chmod 0440 /etc/sudoers.d/wheel
+  echo "%sudo ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo-nopasswd && \
+  chmod 0440 /etc/sudoers.d/sudo-nopasswd
 
-# 4. Establecer el directorio de trabajo en el home del usuario
 WORKDIR /home/stark
 
-# 5. Cambiar el usuario por defecto a 'stark'
 USER stark
 
-# 6. Definir zsh como shell interactiva al iniciar
 CMD ["/bin/zsh"]
