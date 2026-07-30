@@ -1,50 +1,73 @@
-# Crear la Imagen
-docker build --network=host -t kali-pentest .
+# Construir imagen cambiando el nombre de usuario y el shell
+docker build \
+  --build-arg USERNAME=stark \
+  --build-arg USER_SHELL=/bin/zsh \
+  -t kali-pentest .
 
-docker run -it -d \
+# Ejecución inicial (Nótese las comillas simples en el unshare)
+docker run -it \
   --name kali-box \
   --network host \
-  --privileged \
   --shm-size=4g \
-  --cap-add=ALL \
   --ipc=host \
+  --cap-add=SYS_ADMIN \
+  --cap-add=NET_RAW \
+  --cap-add=NET_ADMIN \
   -v /run/user/1000:/run/user/1000 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v /dev/dri:/dev/dri \
-  -e HOSTNAME=kali \
+  -v /run/systemd/resolve:/run/systemd/resolve:ro \
+  -v /var/run/NetworkManager:/var/run/NetworkManager:ro \
+  -v /dev/bus/usb:/dev/bus/usb \
+  --device-cgroup-rule='c 189:* rmw' \
   -e DISPLAY=$DISPLAY \
   -e WAYLAND_DISPLAY=$WAYLAND_DISPLAY \
   -e XDG_RUNTIME_DIR=/run/user/1000 \
   kali-pentest \
-  /bin/zsh
+  sudo -E unshare --uts bash -c 'hostname kali && exec su - $RUNTIME_USER -s $RUNTIME_SHELL'
 
-==============Alias a usar Zsh====================
-# todo en la maquina host (No docker)
-# instalar xorg-xhost
-# ejecutar: xhost +local -> esto es necesario siempre que vamos a usarlo
-# agregarlo si se requiere simpre al inicio de session o a los alias para que se
-# ejecute o prenda solo cuando vamos a usar esto y no siempre
+
+
+# ==============================================================================
+# ENTORNO DE PENTESTING DOCKERIZADO (KALI-BOX)
+# ==============================================================================
+
+export PENTEST_CONTAINER="kali-box"
+export PENTEST_USER="stark"
+export PENTEST_HOSTNAME="kali"
 
 pentest() {
-    echo "[+] Iniciando máquina kali-box..."
-    docker start kali-box >/dev/null
+    echo "[+] Inicializando entorno de hacking..."
+    
     xhost +local: &>/dev/null
 
-    echo "[+] Desplegando terminal maestra en GNOME (Forzando X11)..."
+    if ! docker ps --format '{{.Names}}' | grep -Eq "^${PENTEST_CONTAINER}\$"; then
+        echo "[+] Levantando contenedor ${PENTEST_CONTAINER}..."
+        docker start ${PENTEST_CONTAINER} >/dev/null
+        sleep 1 
+    else
+        echo "[*] El contenedor ya se encuentra en ejecución."
+    fi
+
+    echo "[+] Desplegando terminal gráfica (Kitty)..."
+    
     nohup docker exec -d \
         -e DISPLAY=$DISPLAY \
         -e XDG_RUNTIME_DIR=/run/user/1000 \
         -e QT_QPA_PLATFORM=xcb \
         -e GDK_BACKEND=x11 \
-        -u stark \
-        kali-box kitty >/dev/null 2>&1 &
+        -e LIBGL_ALWAYS_SOFTWARE=0 \
+        -e KITTY_DISABLE_WAYLAND=1 \
+        -u ${PENTEST_USER} \
+        ${PENTEST_CONTAINER} \
+        sudo unshare --uts sh -c "hostname ${PENTEST_HOSTNAME} && exec kitty" >/dev/null 2>&1 &
     
     disown
-    echo "[+] Entorno kali-box listo y terminal desplegada."
+    echo "[+] Entorno listo. Terminal maestra desplegada con éxito."
 }
 
 pentest-stop() {
-    echo "[-] Deteniendo máquina kali-box..."
-    docker stop kali-box >/dev/null
-    echo "[-] kali-box se ha detenido correctamente."
+    echo "[-] Deteniendo máquina ${PENTEST_CONTAINER}..."
+    docker stop ${PENTEST_CONTAINER} >/dev/null
+    echo "[-] Contenedor detenido y recursos liberados."
 }

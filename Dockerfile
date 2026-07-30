@@ -1,39 +1,40 @@
 FROM kalilinux/kali-rolling
 
-# 2. Actualizar el sistema e instalar dependencias base
-RUN apt-get update && \
-  apt-get upgrade -y && \
-  apt-get install -y \
-  build-essential \
-  lsd \
-  bat \
-  git \
+ENV DEBIAN_FRONTEND=noninteractive
+
+ARG USERNAME=pentester
+ARG PASSWORD=${USERNAME}
+ARG USER_SHELL=/bin/bash
+
+RUN apt-get update && apt-get upgrade -y && \
+  apt-get install -y --no-install-recommends \
+  kali-linux-large \
   sudo \
-  curl \
-  wget \
-  zsh \
-  neovim \
-  kitty \
-  p7zip-full \
-  unzip \
-  tar \
-  iputils-ping \
+  nano \
   iproute2 \
-  isc-dhcp-client \
-  dnsutils \
-  kali-linux-default && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
+  net-tools \
+  iputils-ping \
+  zsh \
+  kitty
 
-ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get install -y --no-install-recommends \
+  x11-apps \
+  mesa-utils \
+  libgl1-mesa-dri \
+  libglx-mesa0 \
+  dbus-x11
 
-RUN useradd -m -s /bin/zsh -G sudo stark && \
-  echo "stark:stark" | chpasswd && \
-  echo "%sudo ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudo-nopasswd && \
-  chmod 0440 /etc/sudoers.d/sudo-nopasswd
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /home/stark
+RUN useradd -m -s ${USER_SHELL} ${USERNAME} && \
+  echo "${USERNAME}:${PASSWORD}" | chpasswd && \
+  usermod -aG sudo ${USERNAME} && \
+  echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-USER stark
+ENV RUNTIME_USER=${USERNAME}
+ENV RUNTIME_SHELL=${USER_SHELL}
 
-CMD ["/bin/zsh"]
+USER ${USERNAME}
+WORKDIR /home/${USERNAME}
+
+CMD exec ${RUNTIME_SHELL}
