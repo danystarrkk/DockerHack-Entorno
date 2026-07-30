@@ -13,6 +13,7 @@ docker run -it \
   --cap-add=SYS_ADMIN \
   --cap-add=NET_RAW \
   --cap-add=NET_ADMIN \
+  --add-host kali:127.0.0.1 \
   -v /run/user/1000:/run/user/1000 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v /dev/dri:/dev/dri \
