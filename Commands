@@ -25,7 +25,7 @@ docker run -it \
   -e WAYLAND_DISPLAY=$WAYLAND_DISPLAY \
   -e XDG_RUNTIME_DIR=/run/user/1000 \
   kali-pentest \
-  sudo -E unshare --uts bash -c 'hostname kali && exec su - $RUNTIME_USER -s $RUNTIME_SHELL'
+  bash -c 'sudo unshare --uts bash -c "hostname kali && exec su - $RUNTIME_USER -s $RUNTIME_SHELL"'
 
 
 
