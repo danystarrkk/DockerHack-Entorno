@@ -27,8 +27,6 @@ docker run -it \
   kali-pentest \
   bash -c 'sudo unshare --uts bash -c "hostname kali && exec su - $RUNTIME_USER -s $RUNTIME_SHELL"'
 
-
-
 # ==============================================================================
 # ENTORNO DE PENTESTING DOCKERIZADO (KALI-BOX)
 # ==============================================================================
@@ -61,7 +59,7 @@ pentest() {
         -e KITTY_DISABLE_WAYLAND=1 \
         -u ${PENTEST_USER} \
         ${PENTEST_CONTAINER} \
-        sudo unshare --uts sh -c "hostname ${PENTEST_HOSTNAME} && exec kitty" >/dev/null 2>&1 &
+        sudo -E unshare --uts sh -c "hostname ${PENTEST_HOSTNAME} && exec kitty" >/dev/null 2>&1 &
     
     disown
     echo "[+] Entorno listo. Terminal maestra desplegada con éxito."
