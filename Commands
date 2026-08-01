@@ -45,7 +45,7 @@ pentest() {
 
     echo "[+] Desplegando terminal gráfica (Kitty)..."
     
-    nohup docker exec -d \
+    docker exec -d \
         -e DISPLAY=$DISPLAY \
         -e XDG_RUNTIME_DIR=/run/user/1000 \
         -e QT_QPA_PLATFORM=xcb \
@@ -58,9 +58,8 @@ pentest() {
         -e GSK_RENDERER=gl \
         -u ${PENTEST_USER} \
         ${PENTEST_CONTAINER} \
-        sudo -E unshare --uts sh -c "hostname ${PENTEST_HOSTNAME} && exec sudo -E -u ${PENTEST_USER} kitty" >/dev/null 2>&1 &
+        sudo -E unshare --uts sh -c "hostname ${PENTEST_HOSTNAME} && umount /etc/resolv.conf 2>/dev/null; ln -sf /var/run/NetworkManager/resolv.conf /etc/resolv.conf 2>/dev/null; chmod a+rw /dev/dri/* 2>/dev/null; exec sudo -E -u ${PENTEST_USER} kitty > /tmp/kitty_error.log 2>&1"
     
-    disown
     echo "[+] Entorno listo. Terminal maestra desplegada con éxito."
 }
 
