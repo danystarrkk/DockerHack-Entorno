@@ -8,7 +8,14 @@ docker build \
 docker run -it \
   --name kali-box \
   --network host \
-  --privileged \
+  --security-opt seccomp=unconfined \
+  --security-opt apparmor=unconfined \
+  --shm-size 4g \
+  --ipc=host \
+  --cap-add=NET_ADMIN \
+  --cap-add=NET_RAW \
+  --device-cgroup-rule='c 189:* rmw' \
+  --cap-add=SYS_ADMIN \
   --add-host kali:127.0.0.1 \
   -v /run/user/1000:/run/user/1000 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -46,20 +53,17 @@ pentest() {
     echo "[+] Desplegando terminal gráfica (Kitty)..."
     
     docker exec -d \
-        -e DISPLAY=$DISPLAY \
-        -e XDG_RUNTIME_DIR=/run/user/1000 \
-        -e QT_QPA_PLATFORM=xcb \
-        -e GDK_BACKEND=x11 \
-        -e LIBGL_ALWAYS_SOFTWARE=0 \
-        -e KITTY_DISABLE_WAYLAND=1 \
-        -e MOZ_DISABLE_CONTENT_SANDBOX=1 \
-        -e GTK_USE_PORTAL=0 \
-        -e GLYCIN_NO_SANDBOX=1 \
-        -e GSK_RENDERER=gl \
-        -u ${PENTEST_USER} \
-        ${PENTEST_CONTAINER} \
-        sudo -E unshare --uts sh -c "hostname ${PENTEST_HOSTNAME} && umount /etc/resolv.conf 2>/dev/null; ln -sf /var/run/NetworkManager/resolv.conf /etc/resolv.conf 2>/dev/null; chmod a+rw /dev/dri/* 2>/dev/null; exec sudo -E -u ${PENTEST_USER} kitty > /tmp/kitty_error.log 2>&1"
-    
+    -e DISPLAY=$DISPLAY \
+    -e XDG_RUNTIME_DIR=/run/user/1000 \
+    -e QT_QPA_PLATFORM=xcb \
+    -e GDK_BACKEND=x11 \
+    -e LIBGL_ALWAYS_SOFTWARE=0 \
+    -e KITTY_DISABLE_WAYLAND=1 \
+    -e GTK_USE_PORTAL=0 \
+    -e GSK_RENDERER=gl \
+    -u ${PENTEST_USER} \
+    ${PENTEST_CONTAINER} \
+    sudo -E unshare --uts sh -c "hostname ${PENTEST_HOSTNAME} && umount /etc/resolv.conf 2>/dev/null; ln -sf /var/run/NetworkManager/resolv.conf /etc/resolv.conf 2>/dev/null; chmod a+rw /dev/dri/* 2>/dev/null; exec sudo -E -u ${PENTEST_USER} kitty > /tmp/kitty_error.log 2>&1"
     echo "[+] Entorno listo. Terminal maestra desplegada con éxito."
 }
 
