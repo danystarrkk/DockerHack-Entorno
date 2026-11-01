@@ -1,6 +1,6 @@
 # Construir imagen cambiando el nombre de usuario y el shell
 docker build \
-  --build-arg USERNAME=stark \
+  --build-arg USERNAME=user \
   --build-arg USER_SHELL=/bin/zsh \
   -t kali-pentest .
 
@@ -35,7 +35,7 @@ docker run -it \
 # ==============================================================================
 
 export PENTEST_CONTAINER="kali-box"
-export PENTEST_USER="stark"
+export PENTEST_USER="user"
 export PENTEST_HOSTNAME="kali"
 
 pentest() {
