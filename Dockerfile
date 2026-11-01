@@ -2,13 +2,13 @@ FROM kalilinux/kali-rolling
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG USERNAME=pentester
-ARG PASSWORD=${USERNAME}
+ARG USERNAME=user
+ARG PASSWORD=pass
 ARG USER_SHELL=/bin/bash
 
 RUN apt-get update && apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
-  kali-linux-large \
+  kali-linux-default \
   sudo \
   nano \
   iproute2 \
@@ -28,8 +28,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -s ${USER_SHELL} ${USERNAME} && \
   echo "${USERNAME}:${PASSWORD}" | chpasswd && \
-  usermod -aG sudo ${USERNAME} && \
-  echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+  usermod -aG sudo ${USERNAME}
 
 ENV RUNTIME_USER=${USERNAME}
 ENV RUNTIME_SHELL=${USER_SHELL}

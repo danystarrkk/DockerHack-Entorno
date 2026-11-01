@@ -16,6 +16,7 @@ docker run -it \
   --cap-add=NET_RAW \
   --device-cgroup-rule='c 189:* rmw' \
   --cap-add=SYS_ADMIN \
+  --device /dev/net/tun \
   --add-host kali:127.0.0.1 \
   -v /run/user/1000:/run/user/1000 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
