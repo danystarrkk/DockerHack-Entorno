@@ -51,6 +51,10 @@ pentest() {
         echo "[*] El contenedor ya se encuentra en ejecución."
     fi
 
+    echo -n "[?] Introduce la contraseña de sudo para ${PENTEST_USER}: "
+    read -rs PENTEST_PASSWORD
+    echo "" 
+
     echo "[+] Desplegando terminal gráfica (Kitty)..."
     
     docker exec -d \
@@ -64,7 +68,10 @@ pentest() {
     -e GSK_RENDERER=gl \
     -u ${PENTEST_USER} \
     ${PENTEST_CONTAINER} \
-    sudo -E unshare --uts sh -c "hostname ${PENTEST_HOSTNAME} && umount /etc/resolv.conf 2>/dev/null; ln -sf /var/run/NetworkManager/resolv.conf /etc/resolv.conf 2>/dev/null; chmod a+rw /dev/dri/* 2>/dev/null; exec sudo -E -u ${PENTEST_USER} kitty > /tmp/kitty_error.log 2>&1"
+    sh -c "echo '${PENTEST_PASSWORD}' | sudo -S -E unshare --uts sh -c \"hostname ${PENTEST_HOSTNAME} && umount /etc/resolv.conf 2>/dev/null; ln -sf /var/run/NetworkManager/resolv.conf /etc/resolv.conf 2>/dev/null; chmod a+rw /dev/dri/* 2>/dev/null; exec sudo -E -u ${PENTEST_USER} dbus-launch kitty > /tmp/kitty_error.log 2>&1\""
+    
+    unset PENTEST_PASSWORD
+
     echo "[+] Entorno listo. Terminal maestra desplegada con éxito."
 }
 

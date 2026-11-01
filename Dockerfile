@@ -2,8 +2,8 @@ FROM kalilinux/kali-rolling
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG USERNAME=user
-ARG PASSWORD=pass
+ARG USERNAME=stark
+ARG PASSWORD=stark
 ARG USER_SHELL=/bin/bash
 
 RUN apt-get update && apt-get upgrade -y && \
